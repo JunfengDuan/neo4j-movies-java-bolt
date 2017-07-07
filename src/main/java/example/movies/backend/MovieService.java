@@ -55,21 +55,22 @@ public class MovieService {
     }
 
     @SuppressWarnings("unchecked")
-    public Map<String, Object> graph(int limit) {
+    public Map<String, Object> graph(int limit, String entity) {
         Iterator<Map<String,Object>> result = cypher.query(
                 "MATCH (m:Movie)<-[:ACTED_IN]-(a:Person) " +
-                " RETURN m.title as movie, collect(a.name) as cast " +
-                " LIMIT {limit}", map("limit",limit));
+                        " WHERE lower(m.title) CONTAINS {part}\n" +
+                " RETURN m.title as movie, collect(a.name) as person " +
+                " LIMIT {limit}", map("limit", limit, "part", entity.toLowerCase()));
         List nodes = new ArrayList();
         List rels= new ArrayList();
         int i=0;
         while (result.hasNext()) {
             Map<String, Object> row = result.next();
-            nodes.add(map("title",row.get("movie"),"label","movie"));
+            nodes.add(map("text",row.get("movie"),"label","movie"));
             int target=i;
             i++;
-            for (Object name : (Collection) row.get("cast")) {
-                Map<String, Object> actor = map("title", name,"label","actor");
+            for (Object name : (Collection) row.get("person")) {
+                Map<String, Object> actor = map("text", name,"label","actor");
                 int source = nodes.indexOf(actor);
                 if (source == -1) {
                     nodes.add(actor);
