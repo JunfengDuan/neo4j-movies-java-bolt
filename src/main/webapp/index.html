@@ -84,6 +84,64 @@
 
 <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
 <script src="js/d3.min.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+
+    var width = 800, height = 1000;
+
+    var force = d3.layout.force()
+        .charge(-1500).linkDistance(200).size([width, height]);
+
+    var svg = d3.select("#graph").append("svg")
+        .attr("width", "100%").attr("height", "100%")
+
+</script>
+
+<script type="text/javascript">
+
+
+        var key=$("#search").find("input[name=search]").val();
+
+        d3.json("/graph?limit=30,entity="+ encodeURIComponent(key), function(error, graph) {
+            if (error) return;
+
+            force.nodes(graph.nodes).links(graph.links).start();
+
+            var link = svg.selectAll(".link")
+                .data(graph.links).enter()
+                .append("line").attr("class", "link");
+
+            var node = svg.selectAll(".node")
+                .data(graph.nodes).enter()
+                .append("g")
+                .attr("class", function (d) { return "node "+d.label; })
+                .call(force.drag);
+
+            var circle = node.append("circle")
+                .attr("r", "40")
+
+
+            // html title attribute
+            node.append("text")
+                .attr("text-anchor", "middle")
+                .text(function (d) { return d.text ; });
+
+
+            // force feed algo ticks
+            force.on("tick", function() {
+                link.attr("x1", function(d) { return d.source.x; })
+                    .attr("y1", function(d) { return d.source.y; })
+                    .attr("x2", function(d) { return d.target.x; })
+                    .attr("y2", function(d) { return d.target.y; });
+
+                node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+            });
+
+        });
+
+</script>
+
 <script type="text/javascript">
     $(function () {
         function showMovie(title) {
@@ -112,6 +170,7 @@
                         });
                         showMovie(data[0].movie.title);
                     }, "json");
+            updateGraph();
             return false;
         }
 
@@ -121,57 +180,53 @@
 </script>
 
 <script type="text/javascript">
-    var width = 800, height = 1000;
 
-    var force = d3.layout.force()
-            .charge(-1500).linkDistance(200).size([width, height]);
-
-    var svg = d3.select("#graph").append("svg")
-            .attr("width", "100%").attr("height", "100%")
-
-    var key=$("#search").find("input[name=search]").val();
-
-    d3.json("/graph?limit=30,entity="+ encodeURIComponent(key), function(error, graph) {
-		if (error) return;
-
-        force.nodes(graph.nodes).links(graph.links).start();
-
-        var link = svg.selectAll(".link")
-                .data(graph.links).enter()
-                .append("line").attr("class", "link");
-
-        var node = svg.selectAll(".node")
-                .data(graph.nodes).enter()
-                .append("g")
-                .attr("class", function (d) { return "node "+d.label; })
-                .call(force.drag);
-
-        var circle = node.append("circle")
-            .attr("r", "40")
-//            .attr("stroke","black")
-//            .attr("fill", "white")
+    function updateGraph() {
 
 
-        // html title attribute
-        node.append("text")
-//            .attr("dx", 0)
-//            .attr("dy", ".35em")
-            .attr("text-anchor", "middle")
-            .text(function (d) { return d.text ; });
+        var key=$("#search").find("input[name=search]").val();
+
+        d3.json("/graph?limit=30,entity="+ encodeURIComponent(key), function(error, graph) {
+            if (error) return;
+
+            force.nodes(graph.nodes).links(graph.links).start();
+
+            var link = svg.selectAll(".link")
+                    .data(graph.links).exit().remove()
+                    .append("line").attr("class", "link");
+
+            var node = svg.selectAll(".node")
+                    .data(graph.nodes).exit().remove()
+                    .append("g")
+                    .attr("class", function (d) { return "node "+d.label; })
+                    .call(force.drag);
+
+            var circle = node.append("circle")
+                .exit().remove()
+                .attr("r", "40")
 
 
-        // force feed algo ticks
-        force.on("tick", function() {
-            link.attr("x1", function(d) { return d.source.x; })
-                    .attr("y1", function(d) { return d.source.y; })
-                    .attr("x2", function(d) { return d.target.x; })
-                    .attr("y2", function(d) { return d.target.y; });
+            // html title attribute
+            node.append("text")
+                .exit().remove()
+                .attr("text-anchor", "middle")
+                .text(function (d) { return d.text ; });
 
-            node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+            // force feed algo ticks
+            force.on("tick", function() {
+                link.attr("x1", function(d) { return d.source.x; })
+                        .attr("y1", function(d) { return d.source.y; })
+                        .attr("x2", function(d) { return d.target.x; })
+                        .attr("y2", function(d) { return d.target.y; });
+
+                node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+            });
 
         });
 
-    });
+    }
 </script>
 </body>
 </html>
