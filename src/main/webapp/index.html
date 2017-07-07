@@ -73,6 +73,7 @@
 <style type="text/css">
 
     .node text {
+        fill: #000;
         pointer-events: none;
         font: 15px sans-serif;
     }
@@ -123,7 +124,7 @@
     var width = 800, height = 1000;
 
     var force = d3.layout.force()
-            .charge(-200).linkDistance(200).size([width, height]);
+            .charge(-1500).linkDistance(200).size([width, height]);
 
     var svg = d3.select("#graph").append("svg")
             .attr("width", "100%").attr("height", "100%")
@@ -146,15 +147,16 @@
                 .call(force.drag);
 
         var circle = node.append("circle")
-            .attr("r", "20")
+            .attr("r", "40")
 //            .attr("stroke","black")
 //            .attr("fill", "white")
 
 
         // html title attribute
         node.append("text")
-            .attr("dx", 12)
+//            .attr("dx", 0)
 //            .attr("dy", ".35em")
+            .attr("text-anchor", "middle")
             .text(function (d) { return d.text ; });
 
 
